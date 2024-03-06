@@ -185,7 +185,7 @@ def delete_account(username, password):
     log_out_user()
     print("Your account is deleted successfully!!1")
 
-   
+# main function 
 def main():
     print(f"Hi! Welcome to the User Authentication and Management System.")
     print(F"What do you want to do? Register/login/update_password/delete_account/")
@@ -278,27 +278,6 @@ def main():
         else:
             print("User must be logged in to delete an account. Login in.")
 
-
-
-
-        
-
         
 if __name__ == "__main__":
-
-    main()
-    
-
-
-    # # query = """insert into user_detail(firstname, lastname, username, password, email)
-    # #                     values ("Rajendra", "Niroula", "@niorula", "ldkfjdf", "dlkf@dkfl.com")"""
-    # # cur.execute(query)
-    # query = """delete from user_detail where username = "@dube" """
-    # cur.execute(query)
-    # data = cur.execute("select * from user_detail").fetchall()
-    # conn.commit()
-    # print(data)
-
-    # p1 = hash_password("rajendra")
-    # p2 = hash_password("rajendra")
-    # print(p1, p2)
+    main()    
