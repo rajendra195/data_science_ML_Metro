@@ -50,6 +50,40 @@ def valid_password(password):
     else:
         return False
 
+# function to check user is login or not
+def user_logged_in():
+    with open("logged.txt", "r") as file:
+        data = file.readlines()
+    if len(data) > 0:
+        return True
+    elif len(data) == 0:
+        return False
+
+# function to logout user
+def log_out_user():
+    with open("logged.txt", "w") as file:
+        file.write("")
+
+# function to give username of logged in user
+def logged_in_username():
+    with open("logged.txt", "r") as file:
+        user = file.readlines()
+        return user[0]
+
+    
+# function to check if user entered password and database password is same
+def check_password(username, password):
+    query = """select password from user_detail where username = ? """
+    pasw = cur.execute(query, (username,)).fetchall()
+    for item in pasw:
+        db_pass = list(item)
+        
+    if bcrypt.checkpw(bytes(password, "utf-8"), db_pass[0]):
+        return True
+    else:
+        return False
+
+
 # function to validate email    
 def valid_email(email):
 
@@ -120,51 +154,80 @@ def register_user(username, password):
 # function to login user
 def login(username, password):
     if not user_exists(username):
-        # return False
-        print("user_not exists")
+        return False
+    
+    # check if the user is exists in database or not
     elif user_exists(username):
-        query = """select password from user_detail where username = ? """
-        pasw = cur.execute(query, (username,)).fetchall()
-        for item in pasw:
-            db_pass = list(item)
-        
-        if bcrypt.checkpw(bytes(password, "utf-8"), db_pass[0]):
+
+        # check if the user entered password match with the database password or not
+        if check_password(username=username, password=password):
             return True
         else:
             return False
         
 
+# function to update password 
+def update_password(username, old_password, new_password):
+    new_hashed_password = hash_password(new_password)
+    # print(new_password, new_hashed_password)
+    query = """update user_detail set password = ? where username = ?"""
+    cur.execute(query, (new_hashed_password, username))
+    conn.commit()
+    log_out_user()
+    print("Password Update successfull!!!")
 
-        # print(username, pasw, db_pass)
-def logout():
-    def
-         
-    
+
+# function to delete account
+def delete_account(username, password):
+    query = "delete from user_detail where username = ? "
+    cur.execute(query, (username, ))
+    conn.commit()
+    log_out_user()
+    print("Your account is deleted successfully!!1")
+
+   
 def main():
     print(f"Hi! Welcome to the User Authentication and Management System.")
     print(F"What do you want to do? Register/login/update_password/delete_account/")
     desire = input("Enter Register/Login/Update/Delete: ")
     if desire.lower().strip() == "register":
+
         user_pass = username_password()
+        # username_passowrd function return user_name and password
         if user_pass != None:
             user_name, password = user_pass
-        if not user_exists(user_name) and valid_password(password):
-            register_user(username=user_name, password=password)
+
+            # check if user exists and password is valid 
+            if not user_exists(user_name) and valid_password(password):
+                # register the new user
+                register_user(username=user_name, password=password)
 
     elif desire.lower().strip() == "login":
-        with open("logged.txt") as file:
-            data = file.readlines()
-        if len(data) > 0:
-            print("User is already logged in!! Please logout first.")
 
-        elif len(data) == 0:    
+        # checks if the user is already logged in
+        if user_logged_in():
+            print("User is already logged in!! Please logout first.")
+            log_in = True
+            while log_in:
+                logout = input("Enter 'logout' to log out: ")
+                if logout == "logout":
+                    log_out_user()
+                    print("User logout successfull!! Re-run the program to login again.")
+                    log_in = False
+                else:
+                    print(f"Incorrect! Please enter 'logout': ")
+
+        # if user is not logged in 
+        else:    
             user_name = input("Enter a username: ")
             password = input("Enter a password: ")
             if valid_password(password):
+                # function to check whether the username and password is true or not
                 login(username=user_name, password=password)
                 try:
+                    # 
                     if not login(username=user_name, password=password):
-                        raise InvalidUsernamePassword("Invalid Username or password")
+                        raise InvalidUsernamePassword("Invalid Username or password.")
                 except InvalidUsernamePassword as e:
                     print(e)
                 else:
@@ -173,7 +236,50 @@ def main():
                     # print(user_name)
                     print("Login Successfull!!!")
             else:
-                print("Invalid password")
+                print("""Invalid Password!!Length of password must be greater than 8.\nPassword must contain atleast one uppercase(A-Z), one lowercase(a-z), one special character(@$_) and one digit(0-9)""")
+
+    elif desire.strip().lower() == "update":
+        if user_logged_in():
+            print(f"Hello!! {logged_in_username()}")
+            print("Update your password!!")
+            user_name = input("Enter your username: ")
+            old_psw = input("Enter your old password: ")
+            try:
+                if user_exists(user_name) and check_password(user_name, old_psw) and logged_in_username() == user_name:
+                    new_psw = input("Enter new password: ")
+                    if valid_password(new_psw):
+                        update_password(username=user_name, old_password=old_psw, new_password=new_psw)
+                    else:
+                        print("""Invalid New Password!!Length of password must be greater than 8.\nPassword must contain atleast one uppercase(A-Z), one lowercase(a-z), one special character(@$_) and one digit(0-9)""")
+
+                else:
+                    raise InvalidUsernamePassword("Email or Password doesn't match.")
+            except InvalidUsernamePassword as e:
+                print(e)
+            
+
+        elif not user_logged_in():
+            print(f"User is not logged in!!! Please Login to update password.")
+
+    elif desire.strip().lower() == "delete":
+        if user_logged_in():
+            print(f"Hello!! {logged_in_username()}")
+            print("Are you sure want to delete your account!!")
+            user_name = input("Enter your username: ")
+            password = input("Enter your old password: ")
+            try:
+                if user_exists(user_name) and check_password(user_name, password) and logged_in_username() == user_name:
+                        delete_account(username=user_name, password=password)
+        
+                else:
+                    raise InvalidUsernamePassword("Email or Password doesn't match.")
+            except InvalidUsernamePassword as e:
+                print(e)
+        else:
+            print("User must be logged in to delete an account. Login in.")
+
+
+
 
         
 
@@ -187,7 +293,7 @@ if __name__ == "__main__":
     # # query = """insert into user_detail(firstname, lastname, username, password, email)
     # #                     values ("Rajendra", "Niroula", "@niorula", "ldkfjdf", "dlkf@dkfl.com")"""
     # # cur.execute(query)
-    # query = """delete from user_detail where username = "@niorula" """
+    # query = """delete from user_detail where username = "@dube" """
     # cur.execute(query)
     # data = cur.execute("select * from user_detail").fetchall()
     # conn.commit()
