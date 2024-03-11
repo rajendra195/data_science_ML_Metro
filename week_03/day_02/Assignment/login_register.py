@@ -24,9 +24,11 @@ class InvalidUsernamePassword(Error):
     pass
 
 # creating a table
-
 query = """create table user_detail(firstname varchar[50], 
-            lastname varchar[50], username varchar[50], password varchar[50], email varchar[50])"""
+                                    lastname varchar[50], 
+                                    username varchar[50], 
+                                    password varchar[50], 
+                                    email varchar[50])"""
 # cur.execute(query)
 
 # function to validate password
