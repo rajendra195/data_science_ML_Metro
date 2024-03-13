@@ -9,17 +9,19 @@ class Statictics:
         data = sorted(datas)
         length = len(data)
         
-        if length % 2 != 0:
+        if (quartile * (length + 1)) % 4 == 0:
             q = data[((quartile * (length + 1)) // 4) - 1]
+            print(q)
+
         else:
             th_item = quartile * (length + 1) // 4
             q = (data[th_item - 1] + data[th_item]) / 2
         return q
 
 stats = Statictics()
-median = stats.quartiles([3, 4, 2, 5, 2, 5, 2, 5, 2], 3)
+median = stats.quartiles([3, 4, 2, 5, 2, 5, 2, 5, 2, 4, 2], 3)
 print(median)
-print(np.percentile([3, 4, 2, 5, 2, 5, 2, 5, 2], 3))
+print(np.percentile([3, 4, 2, 5, 2, 5, 2, 5, 2, 4, 2], 3))
 
 
-print(stats.mean([3, 3, 5, 2, 4, 2]))
+# print(stats.mean([3, 3, 5, 2, 4, 2]))
