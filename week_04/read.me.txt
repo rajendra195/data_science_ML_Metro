@@ -1,0 +1,2 @@
+day 1 to day 5 statistics 
+day 6 numpy
